@@ -1,4 +1,4 @@
-package io.github.thegatesdev.mapletree;
+package io.github.thegatesdev.mapletree.data;
 
 public interface ReadableDataHolder {
     ReadableData getReadableData();

@@ -18,6 +18,34 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <includes>
+                                    <include>io.github.thegatesdev:maple</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>io.github.thegatesdev:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.MF</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
                 <configuration>
                     <file>${project.build.directory}/${project.build.finalName}.jar</file>
@@ -40,7 +68,6 @@
             <groupId>io.github.thegatesdev</groupId>
             <artifactId>maple</artifactId>
             <version>1.2.5</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.github.thegatesdev</groupId>

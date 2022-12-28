@@ -5,7 +5,6 @@ import io.github.thegatesdev.mapletree.data.DataType;
 import io.github.thegatesdev.mapletree.data.DataTypeHolder;
 import io.github.thegatesdev.mapletree.data.Readable;
 import io.github.thegatesdev.mapletree.factory.Factory;
-import io.github.thegatesdev.mapletree.factory.ReadableFactory;
 import io.github.thegatesdev.mapletree.registry.core.BasicRegistry;
 import io.github.thegatesdev.mapletree.registry.core.Registry;
 
@@ -13,7 +12,7 @@ import java.util.Collection;
 import java.util.function.Function;
 
 // Factory registry = registry of factories and immediately statically register some.
-public abstract class FactoryRegistry<D, F extends ReadableFactory<D>> extends BasicRegistry<String, ReadableFactory<D>> implements Identifiable, DataTypeHolder<D> {
+public abstract class FactoryRegistry<D, F extends Factory<D>> extends BasicRegistry<String, Factory<D>> implements Identifiable, DataTypeHolder<D> {
     protected final String id;
     private final Function<F, String> keyGetter;
     private final DataType<D> dataType;
@@ -25,7 +24,7 @@ public abstract class FactoryRegistry<D, F extends ReadableFactory<D>> extends B
         this.dataType = registryDatatype(id, this);
     }
 
-    public static <D> DataType<D> registryDatatype(String id, Registry<String, ReadableFactory<D>> registry) {
+    private static <D> DataType<D> registryDatatype(String id, Registry<String, Factory<D>> registry) {
         return Readable.map(data -> {
             final String s = data.getString("type");
             final Factory<D> factory = registry.get(s);
@@ -67,7 +66,7 @@ public abstract class FactoryRegistry<D, F extends ReadableFactory<D>> extends B
     }
 
     @Override
-    public ReadableFactory<D> register(final String key, final ReadableFactory<D> value) {
+    public Factory<D> register(final String key, final Factory<D> value) {
         registered++;
         return super.register(key, value);
     }

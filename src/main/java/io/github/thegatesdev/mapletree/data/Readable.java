@@ -14,13 +14,26 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class Readable<D> extends DataType<D> {
-
-    private final Function<DataElement, D> readFunction;
-
-    // CACHE
+public class Readable<D> implements DataType<D> {
 
     private static final Map<Class<?>, Readable<?>> PRIMITIVE_CACHE = new HashMap<>();
+    private final Class<D> dataClass;
+    private final Function<DataElement, D> readFunction;
+    private String identifier;
+
+    // CACHE
+    private Readable<List<D>> listType;
+
+    public Readable(final Function<DataElement, D> readFunction) {
+        this(null, readFunction);
+    }
+
+    public Readable(final Class<D> dataClass, final Function<DataElement, D> readFunction) {
+        this.dataClass = dataClass;
+        this.readFunction = readFunction;
+    }
+
+    // --
 
     @SuppressWarnings("unchecked")
     private static <D> Readable<D> getOrCreatePrimitive(Class<D> primitiveClass, Supplier<Readable<D>> supplier) {
@@ -41,36 +54,6 @@ public class Readable<D> extends DataType<D> {
         });
     }
 
-    // --
-
-    public Readable(final Function<DataElement, D> readFunction) {
-        this(null, readFunction);
-    }
-
-    public Readable(final Class<D> dataClass, final Function<DataElement, D> readFunction) {
-        super(dataClass);
-        this.readFunction = readFunction;
-    }
-
-    @Override
-    public D read(DataElement element) {
-        try {
-            return readFunction.apply(element);
-        } catch (ElementException e) {
-            throw e;
-        } catch (Throwable throwable) {
-            throw new ElementException(element, "error happened while reading dataType " + friendlyId(), throwable);
-        }
-    }
-
-
-    @Override
-    public Readable<D> id(final String identifier) {
-        super.id(identifier);
-        return this;
-    }
-
-
     public static <D> Readable<D> primitive(Class<D> dataClass) {
         return getOrCreatePrimitive(dataClass, () -> new Readable<>(dataClass, element -> element.requireOf(DataPrimitive.class).requireValue(dataClass))).id(dataClass.getSimpleName().toLowerCase());
     }
@@ -89,7 +72,6 @@ public class Readable<D> extends DataType<D> {
         })).id(enumClass.getSimpleName().toLowerCase());
     }
 
-
     public static <D> Readable<D> map(Class<D> dataClass, Function<DataMap, D> mapReader) {
         return new Readable<>(dataClass, element -> mapReader.apply(element.requireOf(DataMap.class)));
     }
@@ -104,5 +86,36 @@ public class Readable<D> extends DataType<D> {
 
     public static <D> Readable<D> map(ReadableData readableData, Function<DataMap, D> mapReader) {
         return map(null, readableData, mapReader);
+    }
+
+    public Readable<D> id(final String identifier) {
+        this.identifier = identifier;
+        return this;
+    }
+
+    public Class<D> dataClass() {
+        return dataClass;
+    }
+
+    @Override
+    public String id() {
+        return identifier;
+    }
+
+    @Override
+    public D read(DataElement element) {
+        try {
+            return readFunction.apply(element);
+        } catch (ElementException e) {
+            throw e;
+        } catch (Throwable throwable) {
+            throw new ElementException(element, "error happened while reading dataType " + friendlyId(), throwable);
+        }
+    }
+
+    @Override
+    public Readable<List<D>> listType() {
+        if (listType == null) listType = createList(this);
+        return listType;
     }
 }

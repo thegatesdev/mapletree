@@ -8,14 +8,16 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class ExpandableType<T> extends DataType<T> implements ReadableDataHolder {
+public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
 
     private final List<Expansion<?>> expansions = new ArrayList<>();
     private final Function<DataMap, T> baseCreator;
     private final ReadableData readableData;
 
+    private final DataType<List<T>> listType = Readable.createList(this);
+    private String id;
+
     public ExpandableType(Class<T> type, ReadableData readableData, Function<DataMap, T> baseCreator) {
-        super(type);
         this.baseCreator = baseCreator;
         this.readableData = readableData;
     }
@@ -32,6 +34,11 @@ public class ExpandableType<T> extends DataType<T> implements ReadableDataHolder
     }
 
     @Override
+    public String id() {
+        return id;
+    }
+
+    @Override
     public T read(DataElement dataElement) {
         final DataMap data = readableData.read(dataElement.requireOf(DataMap.class));
         final T apply = baseCreator.apply(data);
@@ -42,9 +49,14 @@ public class ExpandableType<T> extends DataType<T> implements ReadableDataHolder
     }
 
     @Override
-    public ExpandableType<T> id(String identifier) {
-        super.id(identifier);
+    public ExpandableType<T> id(final String id) {
+        if (this.id == null) this.id = id;
         return this;
+    }
+
+    @Override
+    public DataType<List<T>> listType() {
+        return null;
     }
 
     private final class Expansion<D> {

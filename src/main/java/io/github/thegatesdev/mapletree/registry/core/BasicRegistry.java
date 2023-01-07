@@ -27,23 +27,41 @@ public class BasicRegistry<K, V> implements Registry<K, V> {
         this.mapSupplier = mapSupplier;
     }
 
-    public void lock() {
-        isLocked = true;
-    }
-
-    public void clear() {
-        shouldRebuildKeyArray = true;
-        kvMap = null;
-        kvMapView = null;
-        keyArray = null;
-        prevK = null;
-        prevV = null;
-        isLocked = false;
-    }
-
     public Map<K, V> back() {
         if (kvMapView == null) return Collections.emptyMap();
         return kvMapView;
+    }
+
+
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> function) {
+        return kvMap.computeIfAbsent(key, function);
+    }
+
+    public K[] keyArray(K[] prep) {
+        if (shouldRebuildKeyArray) {
+            keyArray = keySet().toArray(prep);
+            shouldRebuildKeyArray = false;
+        }
+        return keyArray;
+    }
+
+    public V overwrite(K key, V value) {
+        lockCheck();
+        if (kvMap == null) init();
+        kvMap.put(key, value);
+        shouldRebuildKeyArray = true;
+        return value;
+    }
+
+    private void init() {
+        if (kvMap == null) {
+            kvMap = mapSupplier.get();
+            kvMapView = Collections.unmodifiableMap(kvMap);
+        }
+    }
+
+    public void lock() {
+        isLocked = true;
     }
 
     @Override
@@ -56,15 +74,9 @@ public class BasicRegistry<K, V> implements Registry<K, V> {
         if (kvMap == null) {
             init();
             kvMap.put(key, value);
-        } else {
-            kvMap.putIfAbsent(key, value);
-        }
-        shouldRebuildKeyArray = true;
+            shouldRebuildKeyArray = true;
+        } else if (kvMap.putIfAbsent(key, value) == null) shouldRebuildKeyArray = true;
         return value;
-    }
-
-    public V computeIfAbsent(K key, Function<? super K, ? extends V> function) {
-        return kvMap.computeIfAbsent(key, function);
     }
 
     public void registerAll(Map<K, V> maps) {
@@ -74,13 +86,6 @@ public class BasicRegistry<K, V> implements Registry<K, V> {
             kvMap.putAll(maps);
         } else maps.forEach(kvMap::putIfAbsent);
         shouldRebuildKeyArray = true;
-    }
-
-    private void init() {
-        if (kvMap == null) {
-            kvMap = mapSupplier.get();
-            kvMapView = Collections.unmodifiableMap(kvMap);
-        }
     }
 
     public V get(K key) {
@@ -95,11 +100,13 @@ public class BasicRegistry<K, V> implements Registry<K, V> {
         return kvMapView.keySet();
     }
 
-    public K[] keyArray(K[] prep) {
-        if (shouldRebuildKeyArray) {
-            keyArray = keySet().toArray(prep);
-            shouldRebuildKeyArray = false;
-        }
-        return keyArray;
+    public void clear() {
+        shouldRebuildKeyArray = true;
+        kvMap = null;
+        kvMapView = null;
+        keyArray = null;
+        prevK = null;
+        prevV = null;
+        isLocked = false;
     }
 }

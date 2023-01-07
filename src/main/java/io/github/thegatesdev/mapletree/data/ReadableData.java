@@ -54,6 +54,45 @@ public class ReadableData {
         return output;
     }
 
+    public ReadableData add(String key, DataTypeHolder<?> holder) {
+        return add(key, new Entry<>(holder.getDataType()));
+    }
+
+    public <T> ReadableData add(String key, DataTypeHolder<T> holder, T defaultValue) {
+        return add(key, new Entry<>(holder.getDataType(), defaultValue));
+    }
+
+    // --
+
+    public <T> ReadableData add(DataTypeHolder<T> holder, Map<String, T> values) {
+        values.forEach((s, t) -> this.add(s, holder, t));
+        return this;
+    }
+
+    // -
+
+    public <T> ReadableData add(List<String> values, DataTypeHolder<T> holder, T def) {
+        values.forEach(s -> add(s, holder, def));
+        return this;
+    }
+
+    public <T> ReadableData add(List<String> values, DataTypeHolder<T> holder) {
+        values.forEach(s -> this.add(s, holder));
+        return this;
+    }
+
+    // -
+
+    public ReadableData after(String s, Function<DataMap, DataPrimitive> function) {
+        if (afterFunctions == null) initAfterFunctions();
+        afterFunctions.putIfAbsent(s, function);
+        return this;
+    }
+
+    public boolean isEmpty() {
+        return dataTypeMap == null || dataTypeMap.isEmpty() && (afterFunctions == null || afterFunctions.isEmpty());
+    }
+
     protected void initDataTypeMap() {
         dataTypeMap = new LinkedHashMap<>(1);
     }
@@ -68,46 +107,6 @@ public class ReadableData {
         if (dataTypeMap == null) initDataTypeMap();
         dataTypeMap.putIfAbsent(key, entry);
         return this;
-    }
-
-    // -
-
-    public ReadableData add(String key, DataTypeHolder<?> holder) {
-        return add(key, new Entry<>(holder.getDataType()));
-    }
-
-    public <T> ReadableData add(String key, DataTypeHolder<T> holder, T defaultValue) {
-        return add(key, new Entry<>(holder.getDataType(), defaultValue));
-    }
-
-    // -
-
-    public <T> ReadableData add(DataTypeHolder<T> holder, Map<String, T> values) {
-        values.forEach((s, t) -> this.add(s, holder, t));
-        return this;
-    }
-
-    public <T> ReadableData add(List<String> values, DataTypeHolder<T> holder, T def) {
-        values.forEach(s -> add(s, holder, def));
-        return this;
-    }
-
-    public <T> ReadableData add(List<String> values, DataTypeHolder<T> holder) {
-        values.forEach(s -> this.add(s, holder));
-        return this;
-    }
-
-    // --
-
-    public ReadableData after(String s, Function<DataMap, DataPrimitive> function) {
-        if (afterFunctions == null) initAfterFunctions();
-        afterFunctions.putIfAbsent(s, function);
-        return this;
-    }
-
-
-    public boolean isEmpty() {
-        return dataTypeMap == null || dataTypeMap.isEmpty() && (afterFunctions == null || afterFunctions.isEmpty());
     }
 
     public static class Entry<T> implements DataTypeHolder<T> {
@@ -131,12 +130,12 @@ public class ReadableData {
             return defaultValue;
         }
 
-        public DataType<T> getDataType() {
-            return dataType;
-        }
-
         public boolean hasDefault() {
             return hasDefault;
+        }
+
+        public DataType<T> getDataType() {
+            return dataType;
         }
     }
 }

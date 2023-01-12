@@ -41,22 +41,17 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
     @Override
     public T read(DataElement dataElement) {
         final DataMap data = readableData.read(dataElement.requireOf(DataMap.class));
-        final T apply = baseCreator.apply(data);
+        final T base = baseCreator.apply(data);
         for (Expansion<?> expansion : expansions) {
-            data.ifPrimitive(expansion.key, dataPrimitive -> expansion.action.accept(dataPrimitive.valueUnsafe(), apply));
+            data.ifPrimitive(expansion.key, dataPrimitive -> expansion.action.accept(dataPrimitive.valueUnsafe(), base));
         }
-        return apply;
+        return base;
     }
 
     @Override
     public ExpandableType<T> id(final String id) {
         if (this.id == null) this.id = id;
         return this;
-    }
-
-    @Override
-    public DataType<List<T>> listType() {
-        return null;
     }
 
     private final class Expansion<D> {

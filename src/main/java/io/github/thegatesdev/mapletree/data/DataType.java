@@ -8,8 +8,6 @@ import java.util.List;
 public interface DataType<D> extends DataTypeHolder<D>, Identifiable {
     D read(DataElement element);
 
-    DataType<D> id(String id);
-
     @Override
     default DataType<D> getDataType() {
         return this;

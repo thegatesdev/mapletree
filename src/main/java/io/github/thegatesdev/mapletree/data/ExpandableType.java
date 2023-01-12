@@ -48,7 +48,6 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
         return base;
     }
 
-    @Override
     public ExpandableType<T> id(final String id) {
         if (this.id == null) this.id = id;
         return this;

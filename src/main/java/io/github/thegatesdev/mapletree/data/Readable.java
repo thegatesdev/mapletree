@@ -13,8 +13,9 @@ import java.util.function.Supplier;
 
 public class Readable<D> implements DataType<D> {
 
-    private static final List<Readable<?>> ALL = new ArrayList<>();
-    private static final List<Readable<?>> ALL_VIEW = Collections.unmodifiableList(ALL);
+    private static final Map<String, Readable<?>> ALL = new HashMap<>();
+    private static final Map<String, Readable<?>> ALL_VIEW = Collections.unmodifiableMap(ALL);
+
     private static final Map<Class<?>, Readable<?>> PRIMITIVE_CACHE = new HashMap<>();
     private final Class<D> dataClass;
     private final Function<DataElement, D> readFunction;
@@ -29,11 +30,14 @@ public class Readable<D> implements DataType<D> {
     public Readable(final Class<D> dataClass, final Function<DataElement, D> readFunction) {
         this.dataClass = dataClass;
         this.readFunction = readFunction;
-        ALL.add(this);
     }
 
-    public static List<Readable<?>> getAll() {
-        return ALL_VIEW;
+    public static Set<String> knownIds() {
+        return ALL_VIEW.keySet();
+    }
+
+    public static Readable<?> get(String key) {
+        return ALL.get(key);
     }
 
     // --
@@ -93,6 +97,7 @@ public class Readable<D> implements DataType<D> {
 
     public Readable<D> id(final String identifier) {
         this.identifier = identifier;
+        if (identifier != null) ALL.putIfAbsent(identifier, this);
         return this;
     }
 

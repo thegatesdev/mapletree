@@ -7,20 +7,18 @@ import io.github.thegatesdev.maple.data.DataPrimitive;
 import io.github.thegatesdev.maple.exception.ElementException;
 import io.github.thegatesdev.threshold.Threshold;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Readable<D> implements DataType<D> {
 
+    private static final List<Readable<?>> ALL = new ArrayList<>();
+    private static final List<Readable<?>> ALL_VIEW = Collections.unmodifiableList(ALL);
     private static final Map<Class<?>, Readable<?>> PRIMITIVE_CACHE = new HashMap<>();
     private final Class<D> dataClass;
     private final Function<DataElement, D> readFunction;
     private String identifier;
-
     // CACHE
     private Readable<List<D>> listType;
 
@@ -31,6 +29,11 @@ public class Readable<D> implements DataType<D> {
     public Readable(final Class<D> dataClass, final Function<DataElement, D> readFunction) {
         this.dataClass = dataClass;
         this.readFunction = readFunction;
+        ALL.add(this);
+    }
+
+    public static List<Readable<?>> getAll() {
+        return ALL_VIEW;
     }
 
     // --

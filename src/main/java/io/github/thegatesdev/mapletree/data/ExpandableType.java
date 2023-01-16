@@ -15,9 +15,10 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
     private final ReadableData readableData;
 
     private final DataType<List<T>> listType = Readable.createList(this);
-    private String id;
+    private final String id;
 
-    public ExpandableType(ReadableData readableData, Function<DataMap, T> baseCreator) {
+    public ExpandableType(String id, ReadableData readableData, Function<DataMap, T> baseCreator) {
+        this.id = id;
         this.baseCreator = baseCreator;
         this.readableData = readableData;
     }
@@ -25,11 +26,6 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
     public <D> ExpandableType<T> expand(String key, DataTypeHolder<D> dataType, BiConsumer<D, T> action) {
         readableData.add(key, dataType, null);
         expansions.add(new Expansion<>(key, action));
-        return this;
-    }
-
-    public ExpandableType<T> id(final String id) {
-        this.id = id;
         return this;
     }
 

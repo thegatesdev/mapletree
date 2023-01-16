@@ -6,7 +6,10 @@ import io.github.thegatesdev.mapletree.registry.Identifiable;
 import java.util.List;
 
 public interface DataType<D> extends DataTypeHolder<D>, Identifiable {
+
     D read(DataElement element);
+
+    Class<D> dataClass();
 
     @Override
     default DataType<D> getDataType() {

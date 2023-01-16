@@ -11,6 +11,7 @@ import java.util.function.Function;
 public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
 
     private final List<Expansion<?>> expansions = new ArrayList<>();
+    private final Class<T> type;
     private final Function<DataMap, T> baseCreator;
     private final ReadableData readableData;
 
@@ -18,6 +19,7 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
     private String id;
 
     public ExpandableType(Class<T> type, ReadableData readableData, Function<DataMap, T> baseCreator) {
+        this.type = type;
         this.baseCreator = baseCreator;
         this.readableData = readableData;
     }
@@ -25,6 +27,11 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
     public <D> ExpandableType<T> expand(String key, DataTypeHolder<D> dataType, BiConsumer<D, T> action) {
         readableData.add(key, dataType, null);
         expansions.add(new Expansion<>(key, action));
+        return this;
+    }
+
+    public ExpandableType<T> id(final String id) {
+        this.id = id;
         return this;
     }
 
@@ -48,9 +55,14 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
         return base;
     }
 
-    public ExpandableType<T> id(final String id) {
-        if (this.id == null) this.id = id;
-        return this;
+    @Override
+    public Class<T> dataClass() {
+        return type;
+    }
+
+    @Override
+    public DataType<List<T>> listType() {
+        return listType;
     }
 
     private final class Expansion<D> {

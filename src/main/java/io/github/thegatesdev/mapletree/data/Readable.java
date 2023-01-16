@@ -7,37 +7,29 @@ import io.github.thegatesdev.maple.data.DataPrimitive;
 import io.github.thegatesdev.maple.exception.ElementException;
 import io.github.thegatesdev.threshold.Threshold;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Readable<D> implements DataType<D> {
-
-    private static final Map<String, Readable<?>> ALL = new HashMap<>();
-    private static final Map<String, Readable<?>> ALL_VIEW = Collections.unmodifiableMap(ALL);
-
     private static final Map<Class<?>, Readable<?>> PRIMITIVE_CACHE = new HashMap<>();
     private final Class<D> dataClass;
     private final Function<DataElement, D> readFunction;
-    private String identifier;
+    private final String identifier;
     // CACHE
     private Readable<List<D>> listType;
 
-    public Readable(final Function<DataElement, D> readFunction) {
-        this(null, readFunction);
+    public Readable(String identifier, final Function<DataElement, D> readFunction) {
+        this(identifier, null, readFunction);
     }
 
-    public Readable(final Class<D> dataClass, final Function<DataElement, D> readFunction) {
+    public Readable(String identifier, final Class<D> dataClass, final Function<DataElement, D> readFunction) {
+        this.identifier = identifier;
         this.dataClass = dataClass;
         this.readFunction = readFunction;
-    }
-
-    public static Set<String> knownIds() {
-        return ALL_VIEW.keySet();
-    }
-
-    public static Readable<?> get(String key) {
-        return ALL.get(key);
     }
 
     // --
@@ -52,7 +44,7 @@ public class Readable<D> implements DataType<D> {
         return (Readable<D>) readable;
     }
 
-    protected static <D> Readable<List<D>> createList(DataType<D> original) {
+    public static <D> Readable<List<D>> createList(DataType<D> original) {
         return new Readable<>(null, element -> {
             final DataList list = element.requireOf(DataList.class);
             final List<D> results = new ArrayList<>(list.size());
@@ -61,48 +53,43 @@ public class Readable<D> implements DataType<D> {
         });
     }
 
+
     public static <D> Readable<D> primitive(Class<D> dataClass) {
-        return getOrCreatePrimitive(dataClass, () -> new Readable<>(dataClass, element -> element.requireOf(DataPrimitive.class).requireValue(dataClass))).id(dataClass.getSimpleName().toLowerCase());
+        return getOrCreatePrimitive(dataClass, () -> new Readable<>(dataClass.getSimpleName().toLowerCase(), dataClass, element -> element.requireOf(DataPrimitive.class).requireValue(dataClass)));
     }
 
-    public static <D> Readable<D> primitive(Class<D> dataClass, Function<DataPrimitive, D> primitiveReader) {
-        return new Readable<>(dataClass, element -> primitiveReader.apply(element.requireOf(DataPrimitive.class)));
+    public static <D> Readable<D> primitive(String identifier, Class<D> dataClass) {
+        return getOrCreatePrimitive(dataClass, () -> new Readable<>(identifier, dataClass, element -> element.requireOf(DataPrimitive.class).requireValue(dataClass)));
+    }
+
+    public static <D> Readable<D> primitive(String identifier, Class<D> dataClass, Function<DataPrimitive, D> primitiveReader) {
+        return new Readable<>(identifier, dataClass, element -> primitiveReader.apply(element.requireOf(DataPrimitive.class)));
     }
 
     public static <E extends Enum<E>> Readable<E> enumeration(Class<E> enumClass) {
-        return getOrCreatePrimitive(enumClass, () -> primitive(enumClass, primitive -> {
+        return getOrCreatePrimitive(enumClass, () -> primitive(enumClass.getSimpleName().toLowerCase(), enumClass, primitive -> {
             final String s = primitive.stringValue();
             final E enumValue = Threshold.enumGet(enumClass, s);
             if (enumValue == null)
                 throw new ElementException(primitive, "'%s' does not contain value %s".formatted(enumClass.getSimpleName(), s));
             return enumValue;
-        })).id(enumClass.getSimpleName().toLowerCase());
+        }));
     }
 
-    public static <D> Readable<D> map(Class<D> dataClass, Function<DataMap, D> mapReader) {
-        return new Readable<>(dataClass, element -> mapReader.apply(element.requireOf(DataMap.class)));
+    public static <D> Readable<D> map(String identifier, Class<D> dataClass, Function<DataMap, D> mapReader) {
+        return new Readable<>(identifier, dataClass, element -> mapReader.apply(element.requireOf(DataMap.class)));
     }
 
-    public static <D> Readable<D> map(Function<DataMap, D> mapReader) {
-        return map((Class<D>) null, mapReader);
+    public static <D> Readable<D> map(String identifier, Function<DataMap, D> mapReader) {
+        return map(identifier, (Class<D>) null, mapReader);
     }
 
-    public static <D> Readable<D> map(Class<D> dataClass, ReadableData readableData, Function<DataMap, D> mapReader) {
-        return new Readable<>(dataClass, element -> mapReader.apply(readableData.read(element.requireOf(DataMap.class))));
+    public static <D> Readable<D> map(String identifier, Class<D> dataClass, ReadableData readableData, Function<DataMap, D> mapReader) {
+        return new Readable<>(identifier, dataClass, element -> mapReader.apply(readableData.read(element.requireOf(DataMap.class))));
     }
 
-    public static <D> Readable<D> map(ReadableData readableData, Function<DataMap, D> mapReader) {
-        return map(null, readableData, mapReader);
-    }
-
-    public Readable<D> id(final String identifier) {
-        this.identifier = identifier;
-        if (identifier != null) ALL.putIfAbsent(identifier, this);
-        return this;
-    }
-
-    public Class<D> dataClass() {
-        return dataClass;
+    public static <D> Readable<D> map(String identifier, ReadableData readableData, Function<DataMap, D> mapReader) {
+        return map(identifier, null, readableData, mapReader);
     }
 
     @Override
@@ -119,6 +106,10 @@ public class Readable<D> implements DataType<D> {
         } catch (Throwable throwable) {
             throw new ElementException(element, "error happened while reading dataType " + friendlyId(), throwable);
         }
+    }
+
+    public Class<D> dataClass() {
+        return dataClass;
     }
 
     @Override

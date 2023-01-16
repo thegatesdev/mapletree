@@ -1,37 +1,27 @@
 package io.github.thegatesdev.mapletree.registry;
 
+import io.github.thegatesdev.maple.data.DataElement;
+import io.github.thegatesdev.maple.data.DataMap;
 import io.github.thegatesdev.maple.exception.ElementException;
 import io.github.thegatesdev.mapletree.data.DataType;
-import io.github.thegatesdev.mapletree.data.DataTypeHolder;
 import io.github.thegatesdev.mapletree.data.Readable;
 import io.github.thegatesdev.mapletree.factory.Factory;
 import io.github.thegatesdev.mapletree.registry.core.BasicRegistry;
-import io.github.thegatesdev.mapletree.registry.core.Registry;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 
 // Factory registry = registry of factories and immediately statically register some.
-public abstract class FactoryRegistry<D, F extends Factory<D>> extends BasicRegistry<String, Factory<D>> implements Identifiable, DataTypeHolder<D> {
+public abstract class FactoryRegistry<D, F extends Factory<D>> extends BasicRegistry<String, Factory<D>> implements Identifiable, DataType<D> {
     protected final String id;
     private final Function<F, String> keyGetter;
-    private final DataType<D> dataType;
+    private final DataType<List<D>> listType = Readable.createList(this);
     private int registered = 0;
 
     protected FactoryRegistry(String id, Function<F, String> keyGetter) {
         this.id = id;
         this.keyGetter = keyGetter;
-        this.dataType = registryDatatype(id, this);
-    }
-
-    private static <D> DataType<D> registryDatatype(String id, Registry<String, Factory<D>> registry) {
-        return Readable.map(data -> {
-            final String s = data.getString("type");
-            final Factory<D> factory = registry.get(s);
-            if (factory == null)
-                throw new ElementException(data, "specified %s type %s does not exist".formatted(id, s));
-            return factory.build(data);
-        }).id(id);
     }
 
     public abstract void registerStatic();
@@ -56,13 +46,23 @@ public abstract class FactoryRegistry<D, F extends Factory<D>> extends BasicRegi
     }
 
     @Override
-    public DataType<D> getDataType() {
-        return dataType;
+    public String id() {
+        return id;
     }
 
     @Override
-    public String id() {
-        return id;
+    public D read(final DataElement element) {
+        final DataMap data = element.requireOf(DataMap.class);
+        final String s = data.getString("type");
+        final Factory<D> factory = get(s);
+        if (factory == null)
+            throw new ElementException(data, "specified %s type %s does not exist".formatted(id, s));
+        return factory.build(data);
+    }
+
+    @Override
+    public DataType<List<D>> listType() {
+        return listType;
     }
 
     @Override

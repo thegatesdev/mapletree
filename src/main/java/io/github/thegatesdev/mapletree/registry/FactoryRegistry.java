@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.function.Function;
 
 // Factory registry = registry of factories and immediately statically register some.
-public abstract class FactoryRegistry<D, F extends Factory<D> & ReadableDataHolder> extends BasicRegistry<String, Factory<D>> implements Identifiable, DataType<D> {
+public abstract class FactoryRegistry<D, F extends Factory<D> & ReadableDataHolder> extends BasicRegistry<String, F> implements Identifiable, DataType<D> {
     protected final String id;
     private final Function<F, String> keyGetter;
     private final DataType<List<D>> listType = Readable.createList(this);
@@ -67,7 +67,7 @@ public abstract class FactoryRegistry<D, F extends Factory<D> & ReadableDataHold
     }
 
     @Override
-    public Factory<D> register(final String key, final Factory<D> value) {
+    public <T extends F> T register(final String key, final T value) {
         registered++;
         return super.register(key, value);
     }

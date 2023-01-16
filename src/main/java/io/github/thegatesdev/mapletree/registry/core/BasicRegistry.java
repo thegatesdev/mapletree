@@ -69,7 +69,7 @@ public class BasicRegistry<K, V> implements Registry<K, V> {
         return isLocked;
     }
 
-    public V register(K key, V value) {
+    public <T extends V> T register(K key, T value) {
         lockCheck();
         if (kvMap == null) {
             init();

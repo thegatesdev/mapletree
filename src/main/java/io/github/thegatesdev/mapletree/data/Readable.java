@@ -52,7 +52,7 @@ public class Readable<D> implements DataType<D> {
     }
 
     private static <D> Readable<List<D>> createList(DataType<D> original) {
-        return new Readable<>(null, element -> {
+        return new Readable<>(original.id() + "_list", element -> {
             final DataList list = element.requireOf(DataList.class);
             final List<D> results = new ArrayList<>(list.size());
             list.forEach(e -> results.add(original.read(e)));

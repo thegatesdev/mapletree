@@ -115,7 +115,6 @@ public class Readable<D> implements DataType<D> {
         }
     }
 
-    @Override
     public Class<D> dataClass() {
         return dataClass;
     }

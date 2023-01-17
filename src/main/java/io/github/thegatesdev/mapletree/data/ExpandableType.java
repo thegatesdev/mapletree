@@ -11,15 +11,13 @@ import java.util.function.Function;
 public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
 
     private final List<Expansion<?>> expansions = new ArrayList<>();
-    private final Class<T> dataClass;
     private final Function<DataMap, T> baseCreator;
     private final ReadableData readableData;
 
     private final String id;
 
-    public ExpandableType(String id, Class<T> dataClass, ReadableData readableData, Function<DataMap, T> baseCreator) {
+    public ExpandableType(String id, ReadableData readableData, Function<DataMap, T> baseCreator) {
         this.id = id;
-        this.dataClass = dataClass;
         this.baseCreator = baseCreator;
         this.readableData = readableData;
     }
@@ -48,11 +46,6 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
             data.ifPrimitive(expansion.key, dataPrimitive -> expansion.action.accept(dataPrimitive.valueUnsafe(), base));
         }
         return base;
-    }
-
-    @Override
-    public Class<T> dataClass() {
-        return dataClass;
     }
 
     private final class Expansion<D> {

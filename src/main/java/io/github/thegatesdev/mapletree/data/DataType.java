@@ -9,6 +9,8 @@ public interface DataType<D> extends DataTypeHolder<D>, Identifiable {
 
     D read(DataElement element);
 
+    Class<D> dataClass();
+
     @Override
     default DataType<D> getDataType() {
         return this;

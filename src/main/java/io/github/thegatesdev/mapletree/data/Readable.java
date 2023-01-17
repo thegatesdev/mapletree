@@ -47,8 +47,8 @@ public class Readable<D> implements DataType<D> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <D> Readable<List<D>> list(DataType<D> original) {
-        return (Readable<List<D>>) LIST_TYPES.computeIfAbsent(original, k -> createList(original));
+    public static <D> Readable<List<D>> list(DataTypeHolder<D> original) {
+        return (Readable<List<D>>) LIST_TYPES.computeIfAbsent(original.getDataType(), k -> createList(original.getDataType()));
     }
 
     private static <D> Readable<List<D>> createList(DataType<D> original) {

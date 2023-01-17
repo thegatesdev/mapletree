@@ -14,7 +14,7 @@ public interface DataType<D> extends DataTypeHolder<D>, Identifiable {
         return this;
     }
 
-    static <D> DataType<List<D>> list(DataType<D> original) {
+    static <D> DataType<List<D>> list(DataTypeHolder<D> original) {
         return Readable.list(original);
     }
 }

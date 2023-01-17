@@ -14,8 +14,7 @@ public interface DataType<D> extends DataTypeHolder<D>, Identifiable {
         return this;
     }
 
-    @Override
-    default DataType<List<D>> listType() {
-        return Readable.createList(this);
+    static <D> DataType<List<D>> list(DataType<D> original) {
+        return Readable.list(original);
     }
 }

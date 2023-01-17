@@ -15,6 +15,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Readable<D> implements DataType<D> {
+    private static final Map<DataType<?>, Readable<?>> LIST_TYPES = new HashMap<>();
+
     private static final Map<Class<?>, Readable<?>> PRIMITIVE_CACHE = new HashMap<>();
     private final Class<D> dataClass;
     private final Function<DataElement, D> readFunction;
@@ -44,7 +46,12 @@ public class Readable<D> implements DataType<D> {
         return (Readable<D>) readable;
     }
 
-    public static <D> Readable<List<D>> createList(DataType<D> original) {
+    @SuppressWarnings("unchecked")
+    public static <D> Readable<List<D>> list(DataType<D> original) {
+        return (Readable<List<D>>) LIST_TYPES.computeIfAbsent(original, k -> createList(original));
+    }
+
+    private static <D> Readable<List<D>> createList(DataType<D> original) {
         return new Readable<>(null, element -> {
             final DataList list = element.requireOf(DataList.class);
             final List<D> results = new ArrayList<>(list.size());
@@ -110,11 +117,5 @@ public class Readable<D> implements DataType<D> {
 
     public Class<D> dataClass() {
         return dataClass;
-    }
-
-    @Override
-    public Readable<List<D>> listType() {
-        if (listType == null) listType = createList(this);
-        return listType;
     }
 }

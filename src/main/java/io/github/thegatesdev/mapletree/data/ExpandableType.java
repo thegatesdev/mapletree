@@ -14,7 +14,6 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
     private final Function<DataMap, T> baseCreator;
     private final ReadableData readableData;
 
-    private final DataType<List<T>> listType = Readable.createList(this);
     private final String id;
 
     public ExpandableType(String id, ReadableData readableData, Function<DataMap, T> baseCreator) {
@@ -47,11 +46,6 @@ public class ExpandableType<T> implements DataType<T>, ReadableDataHolder {
             data.ifPrimitive(expansion.key, dataPrimitive -> expansion.action.accept(dataPrimitive.valueUnsafe(), base));
         }
         return base;
-    }
-
-    @Override
-    public DataType<List<T>> listType() {
-        return listType;
     }
 
     private final class Expansion<D> {

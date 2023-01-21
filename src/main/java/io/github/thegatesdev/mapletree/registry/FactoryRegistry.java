@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.function.Function;
 
 // Factory registry = registry of factories and immediately statically register some.
-public abstract class FactoryRegistry<D, F extends Factory<D> & ReadableDataHolder> extends BasicRegistry<String, F> implements Identifiable, DataType<D> {
+public abstract class FactoryRegistry<D, F extends Factory<? extends D> & ReadableDataHolder> extends BasicRegistry<String, F> implements Identifiable, DataType<D> {
     protected final String id;
     private final Function<F, String> keyGetter;
     private int registered = 0;
@@ -52,7 +52,7 @@ public abstract class FactoryRegistry<D, F extends Factory<D> & ReadableDataHold
     public D read(final DataElement element) {
         final DataMap data = element.requireOf(DataMap.class);
         final String s = data.getString("type");
-        final Factory<D> factory = get(s);
+        final Factory<? extends D> factory = get(s);
         if (factory == null)
             throw new ElementException(data, "specified %s type %s does not exist".formatted(id, s));
         return factory.build(data);

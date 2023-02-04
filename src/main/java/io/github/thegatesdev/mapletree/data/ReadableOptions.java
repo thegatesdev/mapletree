@@ -7,17 +7,17 @@ import io.github.thegatesdev.maple.data.DataPrimitive;
 import io.github.thegatesdev.maple.exception.ElementException;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 
-public class ReadableData {
+public class ReadableOptions {
 
     protected Map<String, Entry<?>> dataTypeMap;
     protected Map<String, Function<DataMap, DataPrimitive>> afterFunctions;
 
-    public ReadableData() {
+    public ReadableOptions() {
     }
 
     public Map<String, Entry<?>> getEntries() {
@@ -54,37 +54,37 @@ public class ReadableData {
         return output;
     }
 
-    public ReadableData add(String key, DataTypeHolder<?> holder) {
+    public ReadableOptions add(String key, DataTypeHolder<?> holder) {
         return add(key, new Entry<>(holder.getDataType()));
     }
 
-    public <T> ReadableData add(String key, DataTypeHolder<T> holder, T defaultValue) {
+    public <T> ReadableOptions add(String key, DataTypeHolder<T> holder, T defaultValue) {
         return add(key, new Entry<>(holder.getDataType(), defaultValue));
     }
 
     // --
 
-    public <T> ReadableData add(DataTypeHolder<T> holder, Map<String, T> values) {
+    public <T> ReadableOptions add(DataTypeHolder<T> holder, Map<String, T> values) {
         values.forEach((s, t) -> this.add(s, holder, t));
         return this;
     }
 
     // -
 
-    public <T> ReadableData add(List<String> values, DataTypeHolder<T> holder, T def) {
+    public <T> ReadableOptions add(List<String> values, DataTypeHolder<T> holder, T def) {
         values.forEach(s -> add(s, holder, def));
         return this;
     }
 
-    public <T> ReadableData add(List<String> values, DataTypeHolder<T> holder) {
+    public <T> ReadableOptions add(List<String> values, DataTypeHolder<T> holder) {
         values.forEach(s -> this.add(s, holder));
         return this;
     }
 
     // -
 
-    public ReadableData after(String s, Function<DataMap, DataPrimitive> function) {
-        if (afterFunctions == null) initAfterFunctions();
+    public ReadableOptions after(String s, Function<DataMap, DataPrimitive> function) {
+        if (afterFunctions == null) afterFunctions = new TreeMap<>();
         afterFunctions.putIfAbsent(s, function);
         return this;
     }
@@ -93,18 +93,10 @@ public class ReadableData {
         return dataTypeMap == null || dataTypeMap.isEmpty() && (afterFunctions == null || afterFunctions.isEmpty());
     }
 
-    protected void initDataTypeMap() {
-        dataTypeMap = new LinkedHashMap<>(1);
-    }
-
-    protected void initAfterFunctions() {
-        afterFunctions = new LinkedHashMap<>(1);
-    }
-
     // --
 
-    protected ReadableData add(String key, Entry<?> entry) {
-        if (dataTypeMap == null) initDataTypeMap();
+    protected ReadableOptions add(String key, Entry<?> entry) {
+        if (dataTypeMap == null) dataTypeMap = new TreeMap<>();
         dataTypeMap.putIfAbsent(key, entry);
         return this;
     }

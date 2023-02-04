@@ -91,12 +91,12 @@ public class Readable<D> implements DataType<D> {
         return map(identifier, (Class<D>) null, mapReader);
     }
 
-    public static <D> Readable<D> map(String identifier, Class<D> dataClass, ReadableData readableData, Function<DataMap, D> mapReader) {
-        return new Readable<>(identifier, dataClass, element -> mapReader.apply(readableData.read(element.requireOf(DataMap.class))));
+    public static <D> Readable<D> map(String identifier, Class<D> dataClass, ReadableOptions readableOptions, Function<DataMap, D> mapReader) {
+        return new Readable<>(identifier, dataClass, element -> mapReader.apply(readableOptions.read(element.requireOf(DataMap.class))));
     }
 
-    public static <D> Readable<D> map(String identifier, ReadableData readableData, Function<DataMap, D> mapReader) {
-        return map(identifier, null, readableData, mapReader);
+    public static <D> Readable<D> map(String identifier, ReadableOptions readableOptions, Function<DataMap, D> mapReader) {
+        return map(identifier, null, readableOptions, mapReader);
     }
 
     @Override

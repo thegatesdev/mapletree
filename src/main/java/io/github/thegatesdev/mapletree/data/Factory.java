@@ -1,4 +1,4 @@
-package io.github.thegatesdev.mapletree.factory;
+package io.github.thegatesdev.mapletree.data;
 
 import io.github.thegatesdev.maple.data.DataMap;
 

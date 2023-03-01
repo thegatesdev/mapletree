@@ -11,7 +11,6 @@ import io.github.thegatesdev.mapletree.registry.core.BasicRegistry;
 import java.util.Collection;
 import java.util.function.Function;
 
-// Factory registry = registry of factories and immediately statically register some.
 public abstract class FactoryRegistry<D, F extends Factory<? extends D> & ReadableOptionsHolder> extends BasicRegistry<String, F> implements Identifiable, DataType<D> {
     protected final String id;
     private final Function<F, String> keyGetter;

@@ -55,11 +55,11 @@ public class ReadableOptions {
     }
 
     public ReadableOptions add(String key, DataTypeHolder<?> holder) {
-        return add(key, new Entry<>(holder.getDataType()));
+        return add(key, new Entry<>(holder.dataType()));
     }
 
     public <T> ReadableOptions add(String key, DataTypeHolder<T> holder, T defaultValue) {
-        return add(key, new Entry<>(holder.getDataType(), defaultValue));
+        return add(key, new Entry<>(holder.dataType(), defaultValue));
     }
 
     // --
@@ -126,7 +126,7 @@ public class ReadableOptions {
             return hasDefault;
         }
 
-        public DataType<T> getDataType() {
+        public DataType<T> dataType() {
             return dataType;
         }
     }

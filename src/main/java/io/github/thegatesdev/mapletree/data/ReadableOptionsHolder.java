@@ -1,5 +1,5 @@
 package io.github.thegatesdev.mapletree.data;
 
 public interface ReadableOptionsHolder {
-    ReadableOptions getReadableOptions();
+    ReadableOptions readableOptions();
 }

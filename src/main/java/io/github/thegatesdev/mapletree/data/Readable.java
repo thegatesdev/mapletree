@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -31,6 +32,13 @@ public class Readable<D> implements DataType<D> {
         this.identifier = identifier;
         this.dataClass = dataClass;
         this.readFunction = readFunction;
+        if (dataClass != null) info(info -> info.description("Type: " + dataClass.getSimpleName()));
+    }
+
+    @Override
+    public Readable<D> info(final Consumer<DataTypeInfo<D, DataType<D>>> consumer) {
+        DataType.super.info(consumer);
+        return this;
     }
 
     // --
@@ -53,12 +61,12 @@ public class Readable<D> implements DataType<D> {
     }
 
     private static <D> Readable<List<D>> createList(DataType<D> original) {
-        return DataTypeInfo.get(new Readable<>(original.id() + "_list", element -> {
+        return new Readable<>(original.id() + "_list", element -> {
             final DataList list = element.requireOf(DataList.class);
             final List<D> results = new ArrayList<>(list.size());
             list.forEach(e -> results.add(original.read(e)));
             return results;
-        })).description("List of '%s'".formatted(original.id())).dataType();
+        }).info(info -> info.description("List of '%s'".formatted(original.id())));
     }
 
 
@@ -67,22 +75,19 @@ public class Readable<D> implements DataType<D> {
     }
 
     public static <D> Readable<D> primitive(String identifier, Class<D> dataClass) {
-        return getOrCreatePrimitive(dataClass, () -> DataTypeInfo.get(
-                        new Readable<>(identifier, dataClass, element -> element.requireOf(DataPrimitive.class).requireValue(dataClass)))
-                .description("A " + dataClass.getSimpleName()).dataType()
-        );
+        return getOrCreatePrimitive(dataClass, () -> new Readable<>(identifier, dataClass, element -> element.requireOf(DataPrimitive.class).requireValue(dataClass)));
     }
 
     public static <E extends Enum<E>> Readable<E> enumeration(Class<E> enumClass) {
-        return getOrCreatePrimitive(enumClass, () -> DataTypeInfo.get(
-                        single(enumClass.getSimpleName().toLowerCase(), enumClass, primitive -> {
-                            final String s = primitive.stringValue();
-                            final E enumValue = Threshold.enumGet(enumClass, s);
-                            if (enumValue == null)
-                                throw new ElementException(primitive, "'%s' does not contain value %s".formatted(enumClass.getSimpleName(), s));
-                            return enumValue;
-                        }))
-                .description("A " + enumClass.getSimpleName(), "Possible values: " + String.join(", ", Threshold.enumNames(enumClass))).dataType());
+        return getOrCreatePrimitive(enumClass, () ->
+                single(enumClass.getSimpleName().toLowerCase(), enumClass, primitive -> {
+                    final String s = primitive.stringValue();
+                    final E enumValue = Threshold.enumGet(enumClass, s);
+                    if (enumValue == null)
+                        throw new ElementException(primitive, "'%s' does not contain value %s".formatted(enumClass.getSimpleName(), s));
+                    return enumValue;
+                }).info(info -> info.description("Possible values: " + String.join(", ", Threshold.enumNames(enumClass))))
+        );
     }
 
     // OTHER
@@ -92,7 +97,8 @@ public class Readable<D> implements DataType<D> {
     }
 
     public static <D> Readable<D> map(String identifier, Class<D> dataClass, Function<DataMap, D> mapReader) {
-        return new Readable<>(identifier, dataClass, element -> mapReader.apply(element.requireOf(DataMap.class)));
+        return new Readable<>(identifier, dataClass, element -> mapReader.apply(element.requireOf(DataMap.class)))
+                .info(info -> info.description("A mapping of values."));
     }
 
     public static <D> Readable<D> map(String identifier, Function<DataMap, D> mapReader) {
@@ -100,7 +106,8 @@ public class Readable<D> implements DataType<D> {
     }
 
     public static <D> Readable<D> map(String identifier, Class<D> dataClass, ReadableOptions readableOptions, Function<DataMap, D> mapReader) {
-        return new Readable<>(identifier, dataClass, element -> mapReader.apply(readableOptions.read(element.requireOf(DataMap.class))));
+        return map(identifier, dataClass, data -> mapReader.apply(readableOptions.read(data)))
+                .info(info -> info.description("Possible values:").description(readableOptions.displayEntries()));
     }
 
     public static <D> Readable<D> map(String identifier, ReadableOptions readableOptions, Function<DataMap, D> mapReader) {

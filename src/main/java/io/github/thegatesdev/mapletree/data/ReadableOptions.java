@@ -14,25 +14,43 @@ import java.util.function.Function;
 
 public class ReadableOptions {
 
-    protected Map<String, Entry<?>> dataTypeMap;
+    protected Map<String, Entry<?>> entries;
     protected Map<String, Function<DataMap, DataPrimitive>> afterFunctions;
 
     public ReadableOptions() {
     }
 
     public Map<String, Entry<?>> getEntries() {
-        if (dataTypeMap == null) return Collections.emptyMap();
-        return Collections.unmodifiableMap(dataTypeMap);
+        if (entries == null) return Collections.emptyMap();
+        return Collections.unmodifiableMap(entries);
+    }
+
+    public static String displayEntry(Entry<?> entry) {
+        final StringBuilder builder = new StringBuilder().append("A ").append(entry.id()).append("; ");
+        if (entry.hasDefault) {
+            if (entry.defaultValue == null) builder.append("optional");
+            else builder.append("default value: ").append(entry.defaultValue);
+        } else builder.append("required");
+        return builder.toString();
+    }
+
+    public String[] displayEntries() {
+        final String[] out = new String[entries.size()];
+        int i = 0;
+        for (final Map.Entry<String, Entry<?>> entry : entries.entrySet()) {
+            out[i++] = entry.getKey() + ": " + displayEntry(entry.getValue());
+        }
+        return out;
     }
 
     public DataMap read(DataMap data) {
         if (isEmpty())
             return new DataMap();
         // Create output
-        final DataMap output = new DataMap(dataTypeMap == null ? 0 : dataTypeMap.size() + (afterFunctions == null ? 0 : afterFunctions.size()));
+        final DataMap output = new DataMap(entries == null ? 0 : entries.size() + (afterFunctions == null ? 0 : afterFunctions.size()));
         try {
-            if (dataTypeMap != null && !dataTypeMap.isEmpty()) {
-                dataTypeMap.forEach((key, value) -> {
+            if (entries != null && !entries.isEmpty()) {
+                entries.forEach((key, value) -> {
                     final DataElement element = data.getOrNull(key);
                     if (element == null) { // Not present
                         if (value.hasDefault) {
@@ -90,14 +108,14 @@ public class ReadableOptions {
     }
 
     public boolean isEmpty() {
-        return dataTypeMap == null || dataTypeMap.isEmpty() && (afterFunctions == null || afterFunctions.isEmpty());
+        return entries == null || entries.isEmpty() && (afterFunctions == null || afterFunctions.isEmpty());
     }
 
     // --
 
     protected ReadableOptions add(String key, Entry<?> entry) {
-        if (dataTypeMap == null) dataTypeMap = new TreeMap<>();
-        dataTypeMap.putIfAbsent(key, entry);
+        if (entries == null) entries = new TreeMap<>();
+        entries.putIfAbsent(key, entry);
         return this;
     }
 

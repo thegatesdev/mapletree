@@ -17,32 +17,6 @@ public class ReadableOptions {
     protected Map<String, Entry<?>> entries;
     protected Map<String, Function<DataMap, DataPrimitive>> afterFunctions;
 
-    public ReadableOptions() {
-    }
-
-    public Map<String, Entry<?>> getEntries() {
-        if (entries == null) return Collections.emptyMap();
-        return Collections.unmodifiableMap(entries);
-    }
-
-    public static String displayEntry(Entry<?> entry) {
-        final StringBuilder builder = new StringBuilder().append("A ").append(entry.id()).append("; ");
-        if (entry.hasDefault) {
-            if (entry.defaultValue == null) builder.append("optional");
-            else builder.append("default value: ").append(entry.defaultValue);
-        } else builder.append("required");
-        return builder.toString();
-    }
-
-    public String[] displayEntries() {
-        final String[] out = new String[entries.size()];
-        int i = 0;
-        for (final Map.Entry<String, Entry<?>> entry : entries.entrySet()) {
-            out[i++] = entry.getKey() + ": " + displayEntry(entry.getValue());
-        }
-        return out;
-    }
-
     public DataMap read(DataMap data) {
         if (isEmpty())
             return new DataMap();
@@ -72,6 +46,8 @@ public class ReadableOptions {
         return output;
     }
 
+    // --
+
     public ReadableOptions add(String key, DataTypeHolder<?> holder) {
         return add(key, new Entry<>(holder.dataType()));
     }
@@ -80,26 +56,27 @@ public class ReadableOptions {
         return add(key, new Entry<>(holder.dataType(), defaultValue));
     }
 
-    // --
-
     public <T> ReadableOptions add(DataTypeHolder<T> holder, Map<String, T> values) {
         values.forEach((s, t) -> this.add(s, holder, t));
         return this;
     }
-
-    // -
 
     public <T> ReadableOptions add(List<String> values, DataTypeHolder<T> holder, T def) {
         values.forEach(s -> add(s, holder, def));
         return this;
     }
 
-    public <T> ReadableOptions add(List<String> values, DataTypeHolder<T> holder) {
+    public ReadableOptions add(List<String> values, DataTypeHolder<?> holder) {
         values.forEach(s -> this.add(s, holder));
         return this;
     }
 
-    // -
+    protected ReadableOptions add(String key, Entry<?> entry) {
+        if (entries == null) entries = new TreeMap<>();
+        entries.putIfAbsent(key, entry);
+        return this;
+    }
+
 
     public ReadableOptions after(String s, Function<DataMap, DataPrimitive> function) {
         if (afterFunctions == null) afterFunctions = new TreeMap<>();
@@ -107,16 +84,31 @@ public class ReadableOptions {
         return this;
     }
 
+    // --
+
     public boolean isEmpty() {
         return entries == null || entries.isEmpty() && (afterFunctions == null || afterFunctions.isEmpty());
     }
 
-    // --
+    private static StringBuilder displayEntry(Entry<?> entry) {
+        final StringBuilder builder = new StringBuilder("A " + entry.id() + "; ");
+        if (entry.hasDefault) {
+            if (entry.defaultValue == null) builder.append("optional");
+            else builder.append("default value: ").append(entry.defaultValue);
+        } else builder.append("required");
+        return builder;
+    }
 
-    protected ReadableOptions add(String key, Entry<?> entry) {
-        if (entries == null) entries = new TreeMap<>();
-        entries.putIfAbsent(key, entry);
-        return this;
+    public String displayEntries() {
+        final StringBuilder builder = new StringBuilder();
+        for (final Map.Entry<String, Entry<?>> entry : entries.entrySet())
+            builder.append(entry.getKey()).append(": ").append(displayEntry(entry.getValue())).append("\n");
+        return builder.toString();
+    }
+
+    public Map<String, Entry<?>> getEntries() {
+        if (entries == null) return Collections.emptyMap();
+        return Collections.unmodifiableMap(entries);
     }
 
     public static class Entry<T> implements DataTypeHolder<T> {

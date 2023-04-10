@@ -8,7 +8,10 @@ import io.github.thegatesdev.maple.exception.ElementException;
 import io.github.thegatesdev.mapletree.registry.DataTypeInfo;
 import io.github.thegatesdev.threshold.Threshold;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -104,7 +107,7 @@ public class Readable<D> implements DataType<D> {
 
     public static <D> Readable<D> map(String identifier, Class<D> dataClass, ReadableOptions readableOptions, Function<DataMap, D> mapReader) {
         return map(identifier, dataClass, data -> mapReader.apply(readableOptions.read(data)))
-                .info(info -> info.description("Possible values:").description(Arrays.toString(readableOptions.displayEntries())));
+                .info(info -> info.representation("Possible values" + String.join("\n", readableOptions.displayEntries())));
     }
 
     public static <D> Readable<D> map(String identifier, ReadableOptions readableOptions, Function<DataMap, D> mapReader) {

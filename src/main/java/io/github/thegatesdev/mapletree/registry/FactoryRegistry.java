@@ -31,7 +31,7 @@ public abstract class FactoryRegistry<D, F extends Factory<? extends D> & Readab
         for (final F factory : factories) register(factory);
     }
 
-    @SafeVarargs // We don't let the reference escape, and we don't store anything in the array.
+    @SafeVarargs
     public final void registerAll(F... factories) {
         for (final F factory : factories) {
             register(factory);

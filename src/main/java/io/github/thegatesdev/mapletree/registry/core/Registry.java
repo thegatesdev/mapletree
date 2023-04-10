@@ -6,7 +6,9 @@ import java.util.Set;
 public interface Registry<K, V> extends Lockable {
     <T extends V> T register(K k, T v);
 
-    void registerAll(Map<K, V> map);
+    default void registerAll(Map<K, V> map) {
+        map.forEach(this::register);
+    }
 
     V get(K key);
 

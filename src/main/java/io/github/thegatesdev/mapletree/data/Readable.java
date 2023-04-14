@@ -90,6 +90,15 @@ public class Readable<D> implements DataType<D> {
         );
     }
 
+
+    public static Readable<String> string() {
+        return primitive(String.class);
+    }
+
+    public static Readable<Number> number() {
+        return primitive(Number.class);
+    }
+
     // OTHER
 
     public static <D> Readable<D> single(String identifier, Class<D> dataClass, Function<DataPrimitive, D> primitiveReader) {

@@ -97,6 +97,14 @@ public class Readable<D> implements DataType<D> {
         return primitive(Number.class);
     }
 
+    public static Readable<Integer> integer() {
+        return primitive(Integer.class);
+    }
+
+    public static Readable<Boolean> bool() {
+        return primitive(Boolean.class);
+    }
+
     // OTHER
 
     public static <D> Readable<D> single(String identifier, Class<D> dataClass, Function<DataPrimitive, D> primitiveReader) {

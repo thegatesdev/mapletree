@@ -6,15 +6,12 @@ import io.github.thegatesdev.maple.data.DataMap;
 import io.github.thegatesdev.maple.data.DataPrimitive;
 import io.github.thegatesdev.maple.exception.ElementException;
 import io.github.thegatesdev.mapletree.registry.DataTypeInfo;
-import io.github.thegatesdev.threshold.Threshold;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class Readable<D> implements DataType<D> {
     private static final Map<String, Readable<?>> LIST_TYPES = new HashMap<>();
@@ -81,12 +78,13 @@ public class Readable<D> implements DataType<D> {
     public static <E extends Enum<E>> Readable<E> enumeration(Class<E> enumClass) {
         return getOrCreatePrimitive(enumClass, () ->
                 single(enumClass.getSimpleName().toLowerCase(), enumClass, primitive -> {
-                    final String s = primitive.stringValue();
-                    final E enumValue = Threshold.enumGet(enumClass, s);
-                    if (enumValue == null)
-                        throw new ElementException(primitive, "'%s' does not contain value %s".formatted(enumClass.getSimpleName(), s));
-                    return enumValue;
-                }).info(info -> info.description("Possible values: " + String.join(", ", Threshold.enumNames(enumClass))))
+                    final String input = primitive.stringValue().strip().replaceAll("\\s+", "").toUpperCase(Locale.ROOT);
+                    try {
+                        return Enum.valueOf(enumClass, input);
+                    } catch (IllegalArgumentException e) {
+                        throw new ElementException(primitive, "'%s' does not contain value %s".formatted(enumClass.getSimpleName(), input));
+                    }
+                }).info(info -> info.description("Possible values: " + Arrays.stream(enumClass.getEnumConstants()).map(Enum::name).collect(Collectors.joining(", "))))
         );
     }
 

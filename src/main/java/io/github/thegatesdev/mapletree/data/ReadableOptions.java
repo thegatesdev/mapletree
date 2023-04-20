@@ -21,7 +21,7 @@ public class ReadableOptions {
         if (isEmpty())
             return new DataMap();
         // Create output
-        final DataMap output = new DataMap(entries == null ? 0 : entries.size() + (afterFunctions == null ? 0 : afterFunctions.size()));
+        final DataMap output = new DataMap();
         try {
             if (entries != null && !entries.isEmpty()) {
                 entries.forEach((key, value) -> {

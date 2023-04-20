@@ -14,6 +14,21 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.thegatesdev</groupId>
+            <artifactId>maple</artifactId>
+            <version>v1.4.1</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <!-- Shade maple -->
@@ -64,13 +79,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <dependencies>
-        <dependency>
-            <groupId>io.github.thegatesdev</groupId>
-            <artifactId>maple</artifactId>
-            <version>1.3.0</version>
-        </dependency>
-    </dependencies>
 
 </project>

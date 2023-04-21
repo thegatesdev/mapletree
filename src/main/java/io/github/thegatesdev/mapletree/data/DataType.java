@@ -7,21 +7,22 @@ import io.github.thegatesdev.mapletree.registry.Identifiable;
 import java.util.List;
 import java.util.function.Consumer;
 
+@FunctionalInterface
 public interface DataType<D> extends DataTypeHolder<D>, Identifiable {
 
-    D read(DataElement element);
-
-    @Override
-    default DataType<D> dataType() {
+    default DataType<D> info(Consumer<DataTypeInfo<D, DataType<D>>> consumer) {
+        consumer.accept(DataTypeInfo.get(this));
         return this;
     }
+
+    D read(DataElement element);
 
     default DataType<List<D>> list() {
         return list(this);
     }
 
-    default DataType<D> info(Consumer<DataTypeInfo<D, DataType<D>>> consumer) {
-        consumer.accept(DataTypeInfo.get(this));
+    @Override
+    default DataType<D> dataType() {
         return this;
     }
 

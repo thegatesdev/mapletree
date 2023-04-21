@@ -25,16 +25,12 @@ public class ReadableOptions {
         try {
             if (entries != null && !entries.isEmpty()) {
                 entries.forEach((key, value) -> {
-                    final DataElement element = data.getOrNull(key);
-                    if (element == null) { // Not present
-                        if (value.hasDefault) {
-                            if (value.defaultValue == null) output.put(key, new DataNull()); // Default null value
-                            else output.put(key, new DataPrimitive(value.defaultValue)); // Has default
-                        } else throw ElementException.requireField(data, key); // Not present and no default is error
-                    } else output.put(key, new DataPrimitive(value.dataType.read(element))); // Present
+                    final DataElement read = readEntry(value, data.getOrNull(key));
+                    if (read == null) throw ElementException.requireField(data, key);
+                    output.put(key, read);
                 });
             }
-            // afterFunctions allow for some pre-calculations ( e.g. generate a predicate for multiple conditions )
+            // afterFunctions allow for some calculations ( e.g. generate a predicate for multiple conditions )
             if (afterFunctions != null && !afterFunctions.isEmpty()) {
                 afterFunctions.forEach((key, value) -> output.put(key, value.apply(output)));
             }
@@ -44,6 +40,15 @@ public class ReadableOptions {
             throw new ElementException(data, "readableData error; %s".formatted(e.getMessage()), e);
         }
         return output;
+    }
+
+    private DataElement readEntry(Entry<?> value, DataElement element) {
+        if (element == null) { // Not present
+            if (value.hasDefault) {
+                if (value.defaultValue == null) return new DataNull(); // Default null value
+                else return new DataPrimitive(value.defaultValue); // Has default
+            } else return null; // Not present and no default is error
+        } else return new DataPrimitive(value.dataType.read(element)); // Present
     }
 
     // --

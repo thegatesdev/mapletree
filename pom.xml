@@ -45,12 +45,12 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
-                                    <include>io.github.thegatesdev:maple</include>
+                                    <include>com.github.thegatesdev:maple</include>
                                 </includes>
                             </artifactSet>
                             <filters>
                                 <filter>
-                                    <artifact>io.github.thegatesdev:*</artifact>
+                                    <artifact>com.github.thegatesdev:*</artifact>
                                     <excludes>
                                         <exclude>META-INF/*.MF</exclude>
                                     </excludes>

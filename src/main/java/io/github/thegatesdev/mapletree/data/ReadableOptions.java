@@ -6,14 +6,12 @@ import io.github.thegatesdev.maple.data.DataNull;
 import io.github.thegatesdev.maple.data.DataPrimitive;
 import io.github.thegatesdev.maple.exception.ElementException;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Function;
 
 public class ReadableOptions {
 
+    private final Object MUT_ENTRIES = new Object(), MUT_AFTER = new Object();
     protected Map<String, Entry<?>> entries;
     protected Map<String, Function<DataMap, DataPrimitive>> afterFunctions;
 
@@ -23,7 +21,7 @@ public class ReadableOptions {
         // Create output
         final DataMap output = new DataMap();
         try {
-            if (entries != null && !entries.isEmpty()) {
+            if (entries != null) synchronized (MUT_ENTRIES) {
                 entries.forEach((key, value) -> {
                     final DataElement read = readEntry(value, data.getOrNull(key));
                     if (read == null) throw ElementException.requireField(data, key);
@@ -31,7 +29,7 @@ public class ReadableOptions {
                 });
             }
             // afterFunctions allow for some calculations ( e.g. generate a predicate for multiple conditions )
-            if (afterFunctions != null && !afterFunctions.isEmpty()) {
+            if (afterFunctions != null) synchronized (MUT_AFTER) {
                 afterFunctions.forEach((key, value) -> output.put(key, value.apply(output)));
             }
         } catch (ElementException e) {
@@ -77,7 +75,7 @@ public class ReadableOptions {
     }
 
     protected ReadableOptions add(String key, Entry<?> entry) {
-        if (entries == null) entries = new TreeMap<>();
+        if (entries == null) entries = new LinkedHashMap<>();
         entries.putIfAbsent(key, entry);
         return this;
     }

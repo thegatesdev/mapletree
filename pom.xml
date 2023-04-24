@@ -23,9 +23,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.github.thegatesdev</groupId>
+            <groupId>com.github.thegatesdev</groupId>
             <artifactId>maple</artifactId>
-            <version>v1.4.1</version>
+            <version>v1.4.2</version>
         </dependency>
     </dependencies>
 

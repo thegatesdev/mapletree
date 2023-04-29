@@ -5,13 +5,15 @@ plugins {
 
 group = "io.github.thegatesdev"
 version = "1.1"
-description = "mapletree"
+description = "Read and store maple data"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+}
+
 repositories {
-    maven {
-        url = uri("https://jitpack.io")
-    }
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -20,7 +22,7 @@ dependencies {
 
 tasks{
     compileJava {
-        options.encoding = Charsets.UTF_8.name() // We want UTF-8 for everything
+        options.encoding = Charsets.UTF_8.name()
         options.release.set(17)
     }
 

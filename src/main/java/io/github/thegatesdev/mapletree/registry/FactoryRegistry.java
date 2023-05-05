@@ -26,6 +26,10 @@ public abstract class FactoryRegistry<D, F extends Factory<? extends D> & Readab
 
     public abstract void registerStatic();
 
+    public F get(String key) {
+        return factories.get(key);
+    }
+
     public void register(F factory) {
         register(keyGetter.apply(factory), factory);
     }
@@ -43,6 +47,11 @@ public abstract class FactoryRegistry<D, F extends Factory<? extends D> & Readab
 
     public final int registered() {
         return registered;
+    }
+
+
+    public String[] keys() {
+        return factories.keySet().toArray(new String[0]);
     }
 
     @Override

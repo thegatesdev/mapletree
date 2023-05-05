@@ -11,8 +11,12 @@ import java.util.function.Consumer;
 public interface DataType<D> extends DataTypeHolder<D>, Identifiable {
 
     default DataType<D> info(Consumer<DataTypeInfo<D, DataType<D>>> consumer) {
-        consumer.accept(DataTypeInfo.get(this));
+        consumer.accept(info());
         return this;
+    }
+
+    default DataTypeInfo<D, DataType<D>> info() {
+        return DataTypeInfo.get(this);
     }
 
     D read(DataElement element);

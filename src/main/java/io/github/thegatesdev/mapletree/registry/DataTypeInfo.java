@@ -1,6 +1,7 @@
 package io.github.thegatesdev.mapletree.registry;
 
 import io.github.thegatesdev.mapletree.data.DataType;
+import io.github.thegatesdev.mapletree.data.ReadableOptions;
 
 import java.util.*;
 
@@ -9,6 +10,7 @@ public class DataTypeInfo<D, T extends DataType<D>> {
     private final T dataType;
     private String description, stringRep, origin;
     private List<String> possibleValues;
+    private ReadableOptions readableOptions;
 
     private DataTypeInfo(T dataType) {
         this.dataType = dataType;
@@ -20,12 +22,18 @@ public class DataTypeInfo<D, T extends DataType<D>> {
 
     // --
 
-    public String description() {
-        return description;
-    }
-
     public DataTypeInfo<D, T> description(final String description) {
         this.description = description;
+        return this;
+    }
+
+    public DataTypeInfo<D, T> origin(final String origin) {
+        this.origin = origin;
+        return this;
+    }
+
+    public DataTypeInfo<D, T> representation(final String stringRep) {
+        this.stringRep = stringRep;
         return this;
     }
 
@@ -41,26 +49,30 @@ public class DataTypeInfo<D, T extends DataType<D>> {
         return this;
     }
 
-    public List<String> possibleValues() {
-        return possibleValues == null ? Collections.emptyList() : Collections.unmodifiableList(possibleValues);
+    public DataTypeInfo<D, T> readableOptions(ReadableOptions readableOptions) {
+        this.readableOptions = readableOptions;
+        return this;
+    }
+
+    
+    public ReadableOptions readableOptions() {
+        return readableOptions;
+    }
+
+    public String description() {
+        return description;
+    }
+
+    public String origin() {
+        return origin;
     }
 
     public String representation() {
         return stringRep;
     }
 
-    public DataTypeInfo<D, T> representation(final String stringRep) {
-        this.stringRep = stringRep;
-        return this;
-    }
-
-    public DataTypeInfo<D, T> origin(final String origin) {
-        this.origin = origin;
-        return this;
-    }
-
-    public String origin() {
-        return origin;
+    public List<String> possibleValues() {
+        return possibleValues == null ? Collections.emptyList() : Collections.unmodifiableList(possibleValues);
     }
 
     // STATIC

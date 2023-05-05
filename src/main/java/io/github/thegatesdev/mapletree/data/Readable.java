@@ -121,7 +121,7 @@ public class Readable<D> implements DataType<D> {
 
     public static <D> Readable<D> map(String identifier, Class<D> dataClass, ReadableOptions readableOptions, Function<DataMap, D> mapReader) {
         return map(identifier, dataClass, data -> mapReader.apply(readableOptions.read(data)))
-                .info(info -> info.representation("Possible values" + String.join("\n", readableOptions.displayEntries())));
+                .info(info -> info.readableOptions(readableOptions));
     }
 
     public static <D> Readable<D> map(String identifier, ReadableOptions readableOptions, Function<DataMap, D> mapReader) {

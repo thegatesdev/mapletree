@@ -11,7 +11,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class Readable<D> implements DataType<D> {
     private static final Map<DataType<?>, Readable<?>> LIST_TYPES = new HashMap<>();
@@ -84,7 +83,7 @@ public class Readable<D> implements DataType<D> {
                     } catch (IllegalArgumentException e) {
                         throw new ElementException(primitive, "'%s' does not contain value %s".formatted(enumClass.getSimpleName(), input));
                     }
-                }).info(info -> info.description("Possible values: " + Arrays.stream(enumClass.getEnumConstants()).map(Enum::name).collect(Collectors.joining(", "))))
+                }).info(info -> info.possibleValues(Arrays.stream(enumClass.getEnumConstants()).map(Enum::name).toList()))
         );
     }
 

@@ -2,15 +2,13 @@ package io.github.thegatesdev.mapletree.registry;
 
 import io.github.thegatesdev.mapletree.data.DataType;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DataTypeInfo<D, T extends DataType<D>> {
 
     private final T dataType;
     private String description, stringRep, origin;
+    private List<String> possibleValues;
 
     private DataTypeInfo(T dataType) {
         this.dataType = dataType;
@@ -29,6 +27,22 @@ public class DataTypeInfo<D, T extends DataType<D>> {
     public DataTypeInfo<D, T> description(final String description) {
         this.description = description;
         return this;
+    }
+
+    public DataTypeInfo<D, T> possibleValues(String... possibleValues) {
+        if (this.possibleValues == null) this.possibleValues = new ArrayList<>(possibleValues.length);
+        Collections.addAll(this.possibleValues, possibleValues);
+        return this;
+    }
+
+    public DataTypeInfo<D, T> possibleValues(Collection<String> possibleValues) {
+        if (this.possibleValues == null) this.possibleValues = new ArrayList<>(possibleValues.size());
+        this.possibleValues.addAll(possibleValues);
+        return this;
+    }
+
+    public List<String> possibleValues() {
+        return possibleValues == null ? Collections.emptyList() : Collections.unmodifiableList(possibleValues);
     }
 
     public String representation() {
@@ -52,6 +66,7 @@ public class DataTypeInfo<D, T extends DataType<D>> {
     // STATIC
 
     private static final Map<String, DataTypeInfo<?, ?>> INFO_RECORD = new HashMap<>();
+    private static final Map<String, DataTypeInfo<?, ?>> VIEW = Collections.unmodifiableMap(INFO_RECORD);
 
     @SuppressWarnings("unchecked")
     public static <D, T extends DataType<D>> DataTypeInfo<D, T> get(T dataType) {
@@ -59,11 +74,11 @@ public class DataTypeInfo<D, T extends DataType<D>> {
     }
 
     public static Set<String> keys() {
-        return INFO_RECORD.keySet();
+        return VIEW.keySet();
     }
 
     public static Collection<DataTypeInfo<?, ?>> values() {
-        return INFO_RECORD.values();
+        return VIEW.values();
     }
 
     public static DataTypeInfo<?, ?> get(String key) {

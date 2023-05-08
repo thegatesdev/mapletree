@@ -6,39 +6,41 @@ import io.github.thegatesdev.maple.data.DataNull;
 import io.github.thegatesdev.maple.data.DataPrimitive;
 import io.github.thegatesdev.maple.exception.ElementException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class ReadableOptions {
 
     private final Object MUT_ENTRIES = new Object(), MUT_AFTER = new Object();
-    protected Map<String, Entry<?>> entries;
-    protected Map<String, Function<DataMap, DataPrimitive>> afterFunctions;
+    protected List<OptionEntry<?>> entries;
+    protected List<AfterEntry> afterFunctions;
 
     public DataMap read(DataMap data) {
         // Create output
         final DataMap output = new DataMap();
         try {
             if (entries != null) synchronized (MUT_ENTRIES) {
-                entries.forEach((key, value) -> {
-                    final DataElement read = readEntry(value, data.getOrNull(key));
-                    if (read == null) throw ElementException.requireField(data, key);
-                    output.put(key, read);
-                });
+                for (OptionEntry<?> entry : entries) {
+                    final DataElement read = readEntry(entry, data.getOrNull(entry.key));
+                    if (read == null) throw ElementException.requireField(data, entry.key);
+                    output.put(entry.key, read);
+                }
             }
             // afterFunctions allow for some calculations ( e.g. generate a predicate for multiple conditions )
             if (afterFunctions != null) synchronized (MUT_AFTER) {
-                afterFunctions.forEach((key, value) -> output.put(key, value.apply(output)));
+                afterFunctions.forEach((value) -> output.put(value.key, value.modifier.apply(output)));
             }
         } catch (ElementException e) {
             throw e;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new ElementException(data, "readableData error; %s".formatted(e.getMessage()), e);
         }
         return output;
     }
 
-    private DataElement readEntry(Entry<?> value, DataElement element) {
+    private DataElement readEntry(OptionEntry<?> value, DataElement element) {
         if (element == null) { // Not present
             if (value.hasDefault) {
                 if (value.defaultValue == null) return new DataNull(); // Default null value
@@ -50,11 +52,11 @@ public class ReadableOptions {
     // --
 
     public ReadableOptions add(String key, DataTypeHolder<?> holder) {
-        return add(key, new Entry<>(holder.dataType()));
+        return add(new OptionEntry<>(key, holder.dataType()));
     }
 
     public <T> ReadableOptions add(String key, DataTypeHolder<T> holder, T defaultValue) {
-        return add(key, new Entry<>(holder.dataType(), defaultValue));
+        return add(new OptionEntry<>(key, holder.dataType(), defaultValue));
     }
 
     public <T> ReadableOptions add(DataTypeHolder<T> holder, Map<String, T> values) {
@@ -72,22 +74,22 @@ public class ReadableOptions {
         return this;
     }
 
-    protected ReadableOptions add(String key, Entry<?> entry) {
-        if (entries == null) entries = new LinkedHashMap<>();
-        entries.putIfAbsent(key, entry);
+    protected ReadableOptions add(OptionEntry<?> entry) {
+        if (entries == null) entries = new ArrayList<>();
+        entries.add(entry);
         return this;
     }
 
 
-    public ReadableOptions after(String s, Function<DataMap, DataPrimitive> function) {
-        if (afterFunctions == null) afterFunctions = new TreeMap<>();
-        afterFunctions.putIfAbsent(s, function);
+    public ReadableOptions after(String s, Function<DataMap, DataElement> function) {
+        if (afterFunctions == null) afterFunctions = new ArrayList<>();
+        afterFunctions.add(new AfterEntry(s, function));
         return this;
     }
 
     // --
 
-    private static StringBuilder displayEntry(Entry<?> entry) {
+    private static StringBuilder displayEntry(OptionEntry<?> entry) {
         final StringBuilder builder = new StringBuilder("A " + entry.id() + "; ");
         if (entry.hasDefault) {
             if (entry.defaultValue == null) builder.append("optional");
@@ -98,43 +100,23 @@ public class ReadableOptions {
 
     public String displayEntries() {
         final StringBuilder builder = new StringBuilder();
-        for (final Map.Entry<String, Entry<?>> entry : entries.entrySet())
-            builder.append(entry.getKey()).append(": ").append(displayEntry(entry.getValue())).append("\n");
+        for (final OptionEntry<?> entry : entries)
+            builder.append(entry.key).append(": ").append(displayEntry(entry)).append("\n");
         return builder.toString();
     }
 
-    public Map<String, Entry<?>> getEntries() {
-        if (entries == null) return Collections.emptyMap();
-        return Collections.unmodifiableMap(entries);
+
+    public record OptionEntry<T>(String key, DataType<T> dataType, T defaultValue,
+                                 boolean hasDefault) implements DataTypeHolder<T> {
+        public OptionEntry(String key, DataType<T> dataType, T defaultValue) {
+            this(key, dataType, defaultValue, true);
+        }
+
+        public OptionEntry(String key, DataType<T> dataType) {
+            this(key, dataType, null, false);
+        }
     }
 
-    public static class Entry<T> implements DataTypeHolder<T> {
-        protected final DataType<T> dataType;
-        protected final T defaultValue;
-        protected final boolean hasDefault;
-
-        private Entry(DataType<T> dataType) {
-            this.dataType = dataType;
-            this.defaultValue = null;
-            hasDefault = false;
-        }
-
-        private Entry(DataType<T> dataType, T defaultValue) {
-            this.dataType = dataType;
-            this.defaultValue = defaultValue;
-            hasDefault = true;
-        }
-
-        public T getDefaultValue() {
-            return defaultValue;
-        }
-
-        public boolean hasDefault() {
-            return hasDefault;
-        }
-
-        public DataType<T> dataType() {
-            return dataType;
-        }
+    public record AfterEntry(String key, Function<DataMap, DataElement> modifier) {
     }
 }

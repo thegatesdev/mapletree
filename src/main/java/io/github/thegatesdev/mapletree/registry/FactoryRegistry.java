@@ -7,9 +7,7 @@ import io.github.thegatesdev.mapletree.data.DataType;
 import io.github.thegatesdev.mapletree.data.Factory;
 import io.github.thegatesdev.mapletree.data.ReadableOptionsHolder;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 public abstract class FactoryRegistry<D, F extends Factory<? extends D> & ReadableOptionsHolder> implements Identifiable, DataType<D> {
@@ -17,6 +15,7 @@ public abstract class FactoryRegistry<D, F extends Factory<? extends D> & Readab
     private final Function<F, String> keyGetter;
 
     private final Map<String, F> factories = new HashMap<>();
+    private final Map<String, F> view = Collections.unmodifiableMap(factories);
     private int registered = 0;
 
     protected FactoryRegistry(String id, Function<F, String> keyGetter) {
@@ -50,8 +49,8 @@ public abstract class FactoryRegistry<D, F extends Factory<? extends D> & Readab
     }
 
 
-    public String[] keys() {
-        return factories.keySet().toArray(new String[0]);
+    public Set<String> keys() {
+        return view.keySet();
     }
 
     @Override
@@ -70,7 +69,8 @@ public abstract class FactoryRegistry<D, F extends Factory<? extends D> & Readab
     }
 
     public <T extends F> T register(final String key, final T value) {
-        if (factories.putIfAbsent(key, value) != null) throw new RuntimeException("Factory with key '" + key + "' already exists");
+        if (factories.putIfAbsent(key, value) != null)
+            throw new RuntimeException("Factory with key '" + key + "' already exists");
         registered++;
         return value;
     }

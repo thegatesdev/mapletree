@@ -16,8 +16,6 @@ public class ReadableOptions {
     protected Map<String, Function<DataMap, DataPrimitive>> afterFunctions;
 
     public DataMap read(DataMap data) {
-        if (isEmpty())
-            return new DataMap();
         // Create output
         final DataMap output = new DataMap();
         try {
@@ -88,10 +86,6 @@ public class ReadableOptions {
     }
 
     // --
-
-    public boolean isEmpty() {
-        return entries == null || entries.isEmpty() && (afterFunctions == null || afterFunctions.isEmpty());
-    }
 
     private static StringBuilder displayEntry(Entry<?> entry) {
         final StringBuilder builder = new StringBuilder("A " + entry.id() + "; ");

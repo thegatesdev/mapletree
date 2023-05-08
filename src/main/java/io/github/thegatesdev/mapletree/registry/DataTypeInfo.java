@@ -54,7 +54,7 @@ public class DataTypeInfo<D, T extends DataType<D>> {
         return this;
     }
 
-    
+
     public ReadableOptions readableOptions() {
         return readableOptions;
     }
@@ -72,7 +72,7 @@ public class DataTypeInfo<D, T extends DataType<D>> {
     }
 
     public List<String> possibleValues() {
-        return possibleValues == null ? Collections.emptyList() : Collections.unmodifiableList(possibleValues);
+        return possibleValues == null ? null : Collections.unmodifiableList(possibleValues);
     }
 
     // STATIC

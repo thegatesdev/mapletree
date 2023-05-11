@@ -7,6 +7,7 @@ import io.github.thegatesdev.maple.data.DataPrimitive;
 import io.github.thegatesdev.maple.exception.ElementException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -105,6 +106,9 @@ public class ReadableOptions {
         return builder.toString();
     }
 
+    public List<OptionEntry<?>> entries() {
+        return Collections.unmodifiableList(entries);
+    }
 
     public record OptionEntry<T>(String key, DataType<T> dataType, T defaultValue,
                                  boolean hasDefault) implements DataTypeHolder<T> {

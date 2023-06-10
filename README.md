@@ -1,7 +1,3 @@
 # mapletree
 
-My data, my way.
-
-This library was made to aid reading and storing complex (configuration) data.
-
-It's pretty dumb.
+This repository is archived since it has been incorporated into Maple: https://github.com/thegatesdev/mapletree
